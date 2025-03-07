@@ -2,6 +2,7 @@
   "name": "easy-peasy-calendar",
   "version": "1.0.0",
   "main": "index.js",
+  "type": "module",
   "description": "A simple calendar API built with Fastify and OpenAPI",
   "keywords": [
     "calendar",
@@ -10,7 +11,7 @@
     "openapi"
   ],
   "scripts": {
-    "start:dev": "ts-node-dev --respawn src/index.ts",
+    "start:dev": "nodemon --watch './**/*.{ts}' --exec 'node --no-warnings --experimental-specifier-resolution=node --loader ts-node/esm' src/index.ts",
     "start:prod": "node ./build/index.js",
     "build": "yarn clean && tsc",
     "clean": "rm -rf build/"
@@ -20,14 +21,16 @@
   "license": "MIT",
   "devDependencies": {
     "@types/node": "^22.13.9",
+    "nodemon": "^3.1.9",
     "ts-node": "^10.9.2",
-    "ts-node-dev": "^2.0.0",
     "typescript": "^5.8.2"
   },
   "engines": {
     "node": ">=20.9.0"
   },
   "dependencies": {
+    "@fastify/swagger": "^9.4.2",
+    "@fastify/swagger-ui": "^5.2.2",
     "fastify": "^5.2.1",
     "fastify-openapi-glue": "^4.8.0"
   }
