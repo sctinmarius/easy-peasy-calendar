@@ -1,0 +1,31 @@
+services:
+  api:
+    build:
+      context: .
+      target: base
+      dockerfile: Dockerfile
+    command: sh -c "yarn start:dev"
+    ports:
+      - 127.0.0.1:3037:3037
+    volumes:
+      - .:/app
+      - /app/node_modules
+    profiles:
+      - dev
+    env_file:
+      - ./.env
+      - ./.env.docker
+
+  api_prod:
+    build:
+      context: .
+      target: production
+      dockerfile: Dockerfile
+    command: sh -c "yarn start:prod"
+    ports:
+      - 127.0.0.1:3037:3037
+    profiles:
+      - prod
+    env_file:
+      - ./.env
+      - ./.env.docker
