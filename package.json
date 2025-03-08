@@ -12,7 +12,7 @@
   ],
   "scripts": {
     "start:dev": "nodemon --watch './**/*.{ts}' --exec 'node --no-warnings --experimental-specifier-resolution=node --loader ts-node/esm' src/index.ts",
-    "start:prod": "node ./build/index.js",
+    "start:prod": "node --no-warnings --experimental-specifier-resolution=node --loader ts-node/esm ./build/index.js",
     "build": "yarn clean && tsc",
     "clean": "rm -rf build/"
   },
