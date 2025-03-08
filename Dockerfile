@@ -7,6 +7,7 @@ RUN yarn install --frozen-lockfile
 
 COPY src src
 COPY openapi openapi
+COPY prisma ./prisma
 
 RUN yarn build
 
@@ -17,9 +18,12 @@ COPY --from=base /app/package.json ./
 COPY --from=base /app/build ./build
 COPY --from=base /app/node_modules ./node_modules
 COPY --from=base /app/openapi ./openapi
+COPY --from=base /app/prisma ./prisma
 
 EXPOSE 3037
 
 ENV NODE_ENV=production
+
+RUN npx prisma migrate deploy
 
 CMD ["yarn", "start:prod"]
