@@ -1,10 +1,9 @@
 import { after, before, describe, it } from 'node:test';
 import assert from 'node:assert';
-
 import { FastifyInstance } from 'fastify';
 import { TestUtil } from './util/test.util';
 
-describe('Database setup', () => {
+describe('[Calendar Entry]', () => {
   let server: FastifyInstance;
 
   before(async () => {
@@ -15,11 +14,15 @@ describe('Database setup', () => {
     await TestUtil.teardown(server);
   });
 
-  it('suite 1 test', async (t) => {
-    await t.test('Should test', async () => {
-      console.log('Running migrations...');
+  it('GET /v1/calendars/{calendarUuid}/entries', async (t) => {
+    await t.test('Should return 500 when calendarUuid is invalid', async () => {
+      const invalidCalendarUuid = 'invalid-uuid';
+      const response = await server.inject({
+        method: 'GET',
+        url: `/v1/calendars/${invalidCalendarUuid}/entries`,
+      });
 
-      assert.deepStrictEqual(true, true);
+      assert.strictEqual(response.statusCode, 500);
     });
   });
 });
