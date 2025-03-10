@@ -13,8 +13,10 @@
   "scripts": {
     "start:dev": "nodemon --watch './**/*.{ts}' --exec 'node --no-warnings --experimental-specifier-resolution=node --loader ts-node/esm' src/index.ts",
     "start:prod": "node --no-warnings --experimental-specifier-resolution=node --loader ts-node/esm ./build/index.js",
+    "test:dev": "node --no-warnings --loader ts-node/esm --experimental-specifier-resolution=node --test src/tests/*.test.ts",
     "build": "yarn clean && tsc",
-    "clean": "rm -rf build/"
+    "clean": "rm -rf build/",
+    "prisma:generate": "prisma generate"
   },
   "repository": "git@github.com:sctinmarius/easy-peasy-calendar.git",
   "author": "Marius Stanciu",

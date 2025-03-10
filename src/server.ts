@@ -1,5 +1,6 @@
 import fastify, { FastifyError, FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import registerPlugins from './plugins';
+import { prisma } from './client';
 
 const buildServer = async ({ port, logger }: { port: number; logger: boolean | object }): Promise<FastifyInstance> => {
   const app = fastify({ logger });
@@ -16,6 +17,10 @@ const buildServer = async ({ port, logger }: { port: number; logger: boolean | o
   });
 
   try {
+    await prisma.$connect();
+    app.log.info('Database is ready to use');
+    app.log.info(`Environment: ${process.env.NODE_ENV}`);
+
     await app.listen({ port, host: '0.0.0.0' });
     app.log.info({
       event: `Server listening on ${port} port!`,

@@ -9,6 +9,7 @@ COPY src src
 COPY openapi openapi
 COPY prisma ./prisma
 
+RUN yarn prisma:generate
 RUN yarn build
 
 FROM node:20-alpine AS production
