@@ -13,7 +13,7 @@ export class CalendarHttpTransport {
   async createCalendar(request: FastifyRequest, reply: FastifyReply) {
     reply.status(HttpStatusCodes.HTTP_STATUS_CREATED);
 
-    return await this.calendarService.createCalendar(request.body);
+    return await this.calendarService.createCalendar(request.body as { name: string });
   }
 
   async getCalendarByUuid(request: FastifyRequest, reply: FastifyReply) {
@@ -31,11 +31,6 @@ export class CalendarHttpTransport {
   async deleteCalendar(request: FastifyRequest, reply: FastifyReply) {
     const { calendarUuid } = request.params as { calendarUuid: string };
 
-    if (!calendarUuid) {
-      reply.status(HttpStatusCodes.HTTP_STATUS_NOT_FOUND).send({ message: 'Calendar not found' });
-      return;
-    }
-
-    return reply.status(HttpStatusCodes.HTTP_STATUS_NO_CONTENT).send();
+    return await this.calendarService.deleteCalendar(calendarUuid, reply);
   }
 }

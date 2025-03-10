@@ -13,8 +13,10 @@
   "scripts": {
     "start:dev": "nodemon --watch './**/*.{ts}' --exec 'node --no-warnings --experimental-specifier-resolution=node --loader ts-node/esm' src/index.ts",
     "start:prod": "node --no-warnings --experimental-specifier-resolution=node --loader ts-node/esm ./build/index.js",
+    "test:dev": "npx prisma migrate deploy && node --no-warnings --loader ts-node/esm --experimental-specifier-resolution=node --test src/tests/*.test.ts",
     "build": "yarn clean && tsc",
-    "clean": "rm -rf build/"
+    "clean": "rm -rf build/",
+    "prisma:generate": "prisma generate"
   },
   "repository": "git@github.com:sctinmarius/easy-peasy-calendar.git",
   "author": "Marius Stanciu",
@@ -22,6 +24,7 @@
   "devDependencies": {
     "@types/node": "^22.13.9",
     "nodemon": "^3.1.9",
+    "prisma": "^6.4.1",
     "ts-node": "^10.9.2",
     "typescript": "^5.8.2"
   },
@@ -31,6 +34,7 @@
   "dependencies": {
     "@fastify/swagger": "^9.4.2",
     "@fastify/swagger-ui": "^5.2.2",
+    "@prisma/client": "^6.4.1",
     "fastify": "^5.2.1",
     "fastify-openapi-glue": "^4.8.0"
   }

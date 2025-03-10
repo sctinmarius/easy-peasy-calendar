@@ -6,6 +6,8 @@ info:
 paths:
   /calendars:
     get:
+      tags:
+        - Calendars
       summary: Get list of calendars
       operationId: getCalendars
       responses:
@@ -34,6 +36,8 @@ paths:
                         name:
                           type: string
     post:
+      tags:
+        - Calendars
       summary: Create a new calendar
       operationId: createCalendar
       requestBody:
@@ -61,6 +65,8 @@ paths:
                     type: string
   /calendars/{calendarUuid}:
     get:
+      tags:
+        - Calendars
       summary: Get single calendar details by UUID
       operationId: getCalendarByUuid
       parameters:
@@ -92,6 +98,8 @@ paths:
                   message:
                     type: string
     put:
+      tags:
+        - Calendars
       summary: Update single calendar details
       operationId: updateCalendar
       parameters:
@@ -134,6 +142,8 @@ paths:
                   message:
                     type: string
     delete:
+      tags:
+        - Calendars
       summary: Delete single calendar by UUID
       operationId: deleteCalendar
       parameters:
@@ -164,6 +174,8 @@ paths:
                     type: string
   /calendars/{calendarUuid}/entries:
     post:
+      tags:
+        - Calendar Entries
       summary: Create a new calendar entry
       operationId: createCalendarEntry
       parameters:
@@ -209,6 +221,8 @@ paths:
                   duration:
                     type: integer
     get:
+      tags:
+        - Calendar Entries
       summary: List calendar entries
       operationId: getCalendarEntries
       parameters:
@@ -254,6 +268,8 @@ paths:
                           type: integer
   /calendars/{calendarUuid}/entries/{entryUuid}:
     put:
+      tags:
+        - Calendar Entries
       summary: Update single calendar entry details
       operationId: updateCalendarEntry
       parameters:
@@ -314,6 +330,8 @@ paths:
                   message:
                     type: string
     delete:
+      tags:
+        - Calendar Entries
       summary: Delete single calendar entry by UUID
       operationId: deleteCalendarEntry
       parameters:

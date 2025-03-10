@@ -1,0 +1,37 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Calendar {
+  uuid          String          @id @default(uuid())
+  name          String          @db.VarChar(100)
+  createdAt     DateTime        @default(now()) @map("created_at")
+  updatedAt     DateTime        @updatedAt @map("updated_at")
+  CalendarEntry CalendarEntry[]
+
+  @@map("calendars")
+}
+
+model CalendarEntry {
+  uuid           String   @id @default(uuid())
+  calendar       Calendar @relation(fields: [calendarUuid], references: [uuid], onDelete: Cascade, onUpdate: Cascade)
+  calendarUuid   String   @map("calendar_uuid")
+  startDate      DateTime @map("start_date")
+  endDate        DateTime @map("end_date")
+  recurrenceRule String?  @map("recurrence_rule")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  @@map("calendar_entries")
+}
