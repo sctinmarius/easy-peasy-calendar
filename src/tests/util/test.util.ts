@@ -1,6 +1,5 @@
 import { FastifyInstance } from 'fastify';
 import buildServer from '../../server';
-import { prisma } from '../../client';
 
 export class TestUtil {
   static async before() {
@@ -12,11 +11,5 @@ export class TestUtil {
 
   static async teardown(server: FastifyInstance) {
     server.close();
-  }
-
-  static async addSampleCalendars() {
-    await prisma.calendar.createMany({
-      data: [{ name: 'Sample Calendar 1' }, { name: 'Sample Calendar 2' }, { name: 'Sample Calendar 3' }],
-    });
   }
 }
