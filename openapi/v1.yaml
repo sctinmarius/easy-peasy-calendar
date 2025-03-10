@@ -51,6 +51,8 @@ paths:
               properties:
                 name:
                   type: string
+                  minLength: 3
+                  maxLength: 100
       responses:
         '201':
           description: Calendar created

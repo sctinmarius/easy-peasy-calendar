@@ -13,7 +13,10 @@ const buildServer = async ({ port, logger }: { port: number; logger: boolean | o
 
   app.setErrorHandler((error: FastifyError, request: FastifyRequest, reply: FastifyReply) => {
     request.log.info({ error });
-    reply.status(500).send({ error });
+    if (error.validation) {
+      return reply.status(400).send({ message: 'Validation error' });
+    }
+    reply.status(error?.statusCode || 500).send({ message: 'An error occured' });
   });
 
   try {

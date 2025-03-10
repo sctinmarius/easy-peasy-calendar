@@ -91,6 +91,6 @@ export class CalendarService {
       },
     });
 
-    return { message: 'Calendar deleted' };
+    return { message: 'Calendar deleted successfully' };
   }
 }

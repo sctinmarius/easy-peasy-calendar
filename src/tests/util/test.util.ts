@@ -10,6 +10,6 @@ export class TestUtil {
   }
 
   static async teardown(server: FastifyInstance) {
-    server.close();
+    await server.close();
   }
 }
