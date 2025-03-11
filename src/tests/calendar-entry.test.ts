@@ -3,10 +3,10 @@ import assert from 'node:assert';
 import { FastifyInstance } from 'fastify';
 import { TestUtil } from './util/test.util';
 import { prisma } from '../client';
-import { CalendarFactory } from './factory';
+import { CalendarEntryFactory, CalendarFactory } from './factory';
 import { faker } from '@faker-js/faker';
 
-describe('[Calendar Entry]', () => {
+describe('[Calendar Entry]', async () => {
   let server: FastifyInstance;
 
   before(async () => {
@@ -216,8 +216,141 @@ describe('[Calendar Entry]', () => {
     });
   });
 
-  // todo implement put
-  it('PUT /v1/calendars/{calendarUuid}/entries/{entryUuid}', async (t) => {});
+  it('PUT /v1/calendars/{calendarUuid}/entries/{entryUuid}', async (t) => {
+    await t.test('Should update a calendar entry', async () => {
+      const calendar = CalendarFactory.generateOne();
+      await prisma.calendar.create({
+        data: calendar,
+      });
+
+      const calendarEntry = CalendarEntryFactory.generateOne(calendar);
+      const createdEntry = await prisma.calendarEntry.create({
+        data: calendarEntry,
+      });
+
+      const updatedEntry = {
+        title: 'Updated Entry',
+        start_date: new Date('2020-10-01'),
+        end_date: new Date('2020-10-02'),
+        recurrence_rule: 'FREQ=DAILY;INTERVAL=3;COUNT=3',
+      };
+
+      const response = await server.inject({
+        method: 'PUT',
+        url: `/v1/calendars/${calendar.uuid}/entries/${createdEntry.uuid}`,
+        payload: updatedEntry,
+      });
+
+      assert.strictEqual(response.statusCode, 204);
+    });
+
+    await t.test('Should return 409 if event overlaps with another event', async () => {
+      const calendar = CalendarFactory.generateOne();
+      await prisma.calendar.create({
+        data: calendar,
+      });
+
+      const calendarEntry1 = CalendarEntryFactory.generateOne(calendar);
+      await prisma.calendarEntry.create({
+        data: calendarEntry1,
+      });
+
+      const calendarEntry2 = CalendarEntryFactory.generateOne(calendar);
+      const createdEntry2 = await prisma.calendarEntry.create({
+        data: calendarEntry2,
+      });
+
+      const overlappingEntry = {
+        title: 'Overlapping Entry',
+        start_date: calendarEntry1.startDate.toISOString(),
+        end_date: calendarEntry1.endDate.toISOString(),
+        recurrence_rule: 'FREQ=DAILY;INTERVAL=3;COUNT=3',
+      };
+
+      const response = await server.inject({
+        method: 'PUT',
+        url: `/v1/calendars/${calendar.uuid}/entries/${createdEntry2.uuid}`,
+        payload: overlappingEntry,
+      });
+
+      assert.strictEqual(response.statusCode, 409);
+      assert.strictEqual(response.json().message, 'The event already exist');
+    });
+
+    await t.test('Should update overlapping event if force is true', async () => {
+      const calendar = CalendarFactory.generateOne();
+      await prisma.calendar.create({
+        data: calendar,
+      });
+
+      const calendarEntry1 = CalendarEntryFactory.generateOne(calendar);
+      await prisma.calendarEntry.create({
+        data: calendarEntry1,
+      });
+
+      const calendarEntry2 = CalendarEntryFactory.generateOne(calendar);
+      const createdEntry2 = await prisma.calendarEntry.create({
+        data: calendarEntry2,
+      });
+
+      const overlappingEntry = {
+        title: 'Overlapping Entry',
+        start_date: calendarEntry1.startDate.toISOString(),
+        end_date: calendarEntry1.endDate.toISOString(),
+        recurrence_rule: 'FREQ=DAILY;INTERVAL=3;COUNT=3',
+      };
+
+      const response = await server.inject({
+        method: 'PUT',
+        url: `/v1/calendars/${calendar.uuid}/entries/${createdEntry2.uuid}?force=true`,
+        payload: overlappingEntry,
+      });
+
+      assert.strictEqual(response.statusCode, 204);
+    });
+
+    await t.test('Should return 404 if calendar does not exist', async () => {
+      const calendarUuidNotFound = faker.string.uuid();
+      const entryUuid = faker.string.uuid();
+
+      const response = await server.inject({
+        method: 'PUT',
+        url: `/v1/calendars/${calendarUuidNotFound}/entries/${entryUuid}`,
+        payload: {
+          title: 'Updated Entry',
+          start_date: new Date(),
+          end_date: faker.date.future(),
+          recurrence_rule: 'FREQ=DAILY;INTERVAL=3;COUNT=3',
+        },
+      });
+
+      assert.deepStrictEqual(response.statusCode, 404);
+      assert.deepStrictEqual(response.json().message, 'Calendar entry not found');
+    });
+
+    await t.test('Should return 404 if calendar entry does not exist', async () => {
+      const calendar = CalendarFactory.generateOne();
+      await prisma.calendar.create({
+        data: calendar,
+      });
+
+      const entryUuid = faker.string.uuid();
+
+      const response = await server.inject({
+        method: 'PUT',
+        url: `/v1/calendars/${calendar.uuid}/entries/${entryUuid}`,
+        payload: {
+          title: 'Updated Entry',
+          start_date: new Date(),
+          end_date: faker.date.future(),
+          recurrence_rule: 'FREQ=DAILY;INTERVAL=3;COUNT=3',
+        },
+      });
+
+      assert.deepStrictEqual(response.statusCode, 404);
+      assert.deepStrictEqual(response.json().message, 'Calendar entry not found');
+    });
+  });
 
   it('DELETE /v1/calendars/{calendarUuid}/entries/{entryUuid}', async (t) => {
     await t.test('Should delete a calendar entry', async () => {

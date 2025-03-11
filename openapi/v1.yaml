@@ -326,6 +326,13 @@ paths:
           schema:
             type: string
             format: uuid
+        - name: force
+          in: query
+          required: false
+          schema:
+            type: string
+            default: false
+          description: Force update the calendar entry even if it conflicts with existing entries.
       requestBody:
         required: true
         content:
@@ -334,19 +341,32 @@ paths:
               type: object
               required:
                 - title
-                - start
-                - duration
+                - start_date
+                - end_date
+                - recurrence_rule
               properties:
                 title:
                   type: string
-                start:
+                start_date:
                   type: string
                   format: date-time
-                duration:
-                  type: integer
+                end_date:
+                  type: string
+                  format: date-time
+                recurrence_rule:
+                  type: string
       responses:
         '204':
           description: Calendar entry updated
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
         '404':
           description: Calendar entry not found
           content:

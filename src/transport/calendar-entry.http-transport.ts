@@ -17,8 +17,10 @@ export class CalendarEntryHttpTransport {
   }
 
   async updateCalendarEntry(request: FastifyRequest, reply: FastifyReply) {
-    const { calendarUuid, entryUuid } = request.params as { calendarUuid: string; entryUuid: string };
-    return await this.calendarEntryService.updateCalendarEntry(calendarUuid, entryUuid, request.body, reply);
+    const { calendar_uuid: calendarUuid, entry_uuid: entryUuid } = request.params as { calendar_uuid: string; entry_uuid: string };
+    const { force } = request.query as { force: boolean };
+
+    return await this.calendarEntryService.updateCalendarEntry(calendarUuid, entryUuid, Boolean(force), request.body as any, reply);
   }
 
   async deleteCalendarEntry(request: FastifyRequest, reply: FastifyReply) {

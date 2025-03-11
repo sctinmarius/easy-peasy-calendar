@@ -42,9 +42,6 @@ export class CalendarEntryService {
   }
 
   async getCalendarEntries(calendarUuid: string, startDate: string, endDate: string, reply: FastifyReply) {
-    console.log('calendarUuid:', calendarUuid);
-    console.log('startDate:', startDate);
-    console.log('endDate:', endDate);
     const foundCalendar = await prisma.calendar.findUnique({
       where: {
         uuid: calendarUuid,
@@ -69,17 +66,66 @@ export class CalendarEntryService {
       entries: foundEntries.map((entry) => this.getCalendarEntryResponse(entry)),
     };
   }
-  async updateCalendarEntry(calendarUuid: string, entryUuid: string, payload: any, reply: FastifyReply) {
-    if (!entryUuid) {
+  async updateCalendarEntry(calendarUuid: string, entryUuid: string, force: boolean, payload: CalendarEntryPayload, reply: FastifyReply) {
+    const foundCalendarWithEntry = await prisma.calendar.findUnique({
+      where: {
+        uuid: calendarUuid,
+      },
+      include: {
+        CalendarEntry: {
+          where: {
+            uuid: entryUuid,
+          },
+        },
+      },
+    });
+
+    if (!foundCalendarWithEntry?.CalendarEntry.length) {
       return reply.status(HttpStatusCodes.HTTP_STATUS_NOT_FOUND).send({ message: 'Calendar entry not found' });
     }
 
-    return {
-      uuid: entryUuid,
-      title: payload.title,
-      start: payload.start,
-      duration: payload.duration,
-    };
+    if (!force) {
+      const overlappingEntries = await prisma.calendarEntry.findMany({
+        where: {
+          calendarUuid: calendarUuid,
+          AND: [
+            {
+              startDate: {
+                lte: new Date(payload.end_date),
+              },
+            },
+            {
+              endDate: {
+                gte: new Date(payload.start_date),
+              },
+            },
+            {
+              uuid: {
+                not: entryUuid,
+              },
+            },
+          ],
+        },
+      });
+
+      if (overlappingEntries.length > 0) {
+        return reply.status(HttpStatusCodes.HTTP_STATUS_CONFLICT).send({ message: 'The event already exist' });
+      }
+    }
+
+    await prisma.calendarEntry.update({
+      where: {
+        uuid: entryUuid,
+      },
+      data: {
+        title: payload.title,
+        startDate: new Date(payload.start_date),
+        endDate: new Date(payload.end_date),
+        recurrenceRule: payload.recurrence_rule,
+      },
+    });
+
+    return reply.status(HttpStatusCodes.HTTP_STATUS_NO_CONTENT).send();
   }
 
   async deleteCalendarEntry(calendarUuid: string, entryUuid: string, reply: FastifyReply) {

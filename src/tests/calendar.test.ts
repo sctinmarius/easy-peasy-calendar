@@ -7,7 +7,7 @@ import { TestUtil } from './util/test.util';
 import { prisma } from '../client';
 import { CalendarEntryFactory, CalendarFactory } from './factory';
 
-describe('[calendar]', () => {
+describe('[calendar]', async () => {
   let server: FastifyInstance;
 
   before(async () => {
