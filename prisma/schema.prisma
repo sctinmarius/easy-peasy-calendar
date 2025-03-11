@@ -25,6 +25,7 @@ model Calendar {
 
 model CalendarEntry {
   uuid           String   @id @default(uuid())
+  title          String   @db.VarChar(100)
   calendar       Calendar @relation(fields: [calendarUuid], references: [uuid], onDelete: Cascade, onUpdate: Cascade)
   calendarUuid   String   @map("calendar_uuid")
   startDate      DateTime @map("start_date")

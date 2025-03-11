@@ -51,6 +51,8 @@ paths:
               properties:
                 name:
                   type: string
+                  minLength: 3
+                  maxLength: 100
       responses:
         '201':
           description: Calendar created
@@ -63,14 +65,14 @@ paths:
                     type: string
                   name:
                     type: string
-  /calendars/{calendarUuid}:
+  /calendars/{calendar_uuid}:
     get:
       tags:
         - Calendars
       summary: Get single calendar details by UUID
       operationId: getCalendarByUuid
       parameters:
-        - name: calendarUuid
+        - name: calendar_uuid
           in: path
           required: true
           schema:
@@ -88,6 +90,15 @@ paths:
                     type: string
                   name:
                     type: string
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
         '404':
           description: Calendar not found
           content:
@@ -103,7 +114,7 @@ paths:
       summary: Update single calendar details
       operationId: updateCalendar
       parameters:
-        - name: calendarUuid
+        - name: calendar_uuid
           in: path
           required: true
           schema:
@@ -132,6 +143,15 @@ paths:
                     type: string
                   name:
                     type: string
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
         '404':
           description: Calendar not found
           content:
@@ -147,7 +167,7 @@ paths:
       summary: Delete single calendar by UUID
       operationId: deleteCalendar
       parameters:
-        - name: calendarUuid
+        - name: calendar_uuid
           in: path
           required: true
           schema:
@@ -156,6 +176,15 @@ paths:
       responses:
         '200':
           description: Calendar deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '400':
+          description: Bad request
           content:
             application/json:
               schema:
@@ -172,14 +201,14 @@ paths:
                 properties:
                   message:
                     type: string
-  /calendars/{calendarUuid}/entries:
+  /calendars/{calendar_uuid}/entries:
     post:
       tags:
         - Calendar Entries
       summary: Create a new calendar entry
       operationId: createCalendarEntry
       parameters:
-        - name: calendarUuid
+        - name: calendar_uuid
           in: path
           required: true
           schema:
@@ -193,16 +222,20 @@ paths:
               type: object
               required:
                 - title
-                - start
-                - duration
+                - start_date
+                - end_date
+                - recurrence_rule
               properties:
                 title:
                   type: string
-                start:
+                start_date:
                   type: string
                   format: date-time
-                duration:
-                  type: integer
+                end_date:
+                  type: string
+                  format: date-time
+                recurrence_rule:
+                  type: string
       responses:
         '201':
           description: Calendar entry created
@@ -215,35 +248,40 @@ paths:
                     type: string
                   title:
                     type: string
-                  start:
+                  start_date:
                     type: string
                     format: date-time
-                  duration:
-                    type: integer
+                  end_date:
+                    type: string
+                    format: date-time
+                  recurrence_rule:
+                    type: string
     get:
       tags:
         - Calendar Entries
       summary: List calendar entries
       operationId: getCalendarEntries
       parameters:
-        - name: calendarUuid
+        - name: calendar_uuid
           in: path
           required: true
           schema:
             type: string
             format: uuid
-        - name: start
+        - name: start_date
+          description: example 2023-01-01
           in: query
           required: true
           schema:
             type: string
-            format: date-time
-        - name: end
+            format: date
+        - name: end_date
+          description: example 2023-01-10
           in: query
           required: true
           schema:
             type: string
-            format: date-time
+            format: date
       responses:
         '200':
           description: List of calendar entries
@@ -261,30 +299,40 @@ paths:
                           type: string
                         title:
                           type: string
-                        start:
+                        start_date:
                           type: string
                           format: date-time
-                        duration:
-                          type: integer
-  /calendars/{calendarUuid}/entries/{entryUuid}:
+                        end_date:
+                          type: string
+                          format: date-time
+                        recurrence_rule:
+                          type: string
+  /calendars/{calendar_uuid}/entries/{entry_uuid}:
     put:
       tags:
         - Calendar Entries
       summary: Update single calendar entry details
       operationId: updateCalendarEntry
       parameters:
-        - name: calendarUuid
+        - name: calendar_uuid
           in: path
           required: true
           schema:
             type: string
             format: uuid
-        - name: entryUuid
+        - name: entry_uuid
           in: path
           required: true
           schema:
             type: string
             format: uuid
+        - name: force
+          in: query
+          required: false
+          schema:
+            type: string
+            default: false
+          description: Force update the calendar entry even if it conflicts with existing entries.
       requestBody:
         required: true
         content:
@@ -293,33 +341,32 @@ paths:
               type: object
               required:
                 - title
-                - start
-                - duration
+                - start_date
+                - end_date
+                - recurrence_rule
               properties:
                 title:
                   type: string
-                start:
+                start_date:
                   type: string
                   format: date-time
-                duration:
-                  type: integer
+                end_date:
+                  type: string
+                  format: date-time
+                recurrence_rule:
+                  type: string
       responses:
-        '200':
+        '204':
           description: Calendar entry updated
+        '400':
+          description: Bad request
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  uuid:
+                  message:
                     type: string
-                  title:
-                    type: string
-                  start:
-                    type: string
-                    format: date-time
-                  duration:
-                    type: integer
         '404':
           description: Calendar entry not found
           content:
@@ -335,13 +382,13 @@ paths:
       summary: Delete single calendar entry by UUID
       operationId: deleteCalendarEntry
       parameters:
-        - name: calendarUuid
+        - name: calendar_uuid
           in: path
           required: true
           schema:
             type: string
             format: uuid
-        - name: entryUuid
+        - name: entry_uuid
           in: path
           required: true
           schema:
@@ -350,6 +397,15 @@ paths:
       responses:
         '200':
           description: Calendar entry deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '400':
+          description: Bad request
           content:
             application/json:
               schema:
