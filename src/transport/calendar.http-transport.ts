@@ -17,19 +17,19 @@ export class CalendarHttpTransport {
   }
 
   async getCalendarByUuid(request: FastifyRequest, reply: FastifyReply) {
-    const { calendarUuid } = request.params as { calendarUuid: string };
+    const { calendar_uuid: calendarUuid } = request.params as { calendar_uuid: string };
 
     return await this.calendarService.getCalendarByUuid(calendarUuid, reply);
   }
 
   async updateCalendar(request: FastifyRequest, reply: FastifyReply) {
-    const { calendarUuid } = request.params as { calendarUuid: string };
+    const { calendar_uuid: calendarUuid } = request.params as { calendar_uuid: string };
 
     return await this.calendarService.updateCalendar(calendarUuid, request.body, reply);
   }
 
   async deleteCalendar(request: FastifyRequest, reply: FastifyReply) {
-    const { calendarUuid } = request.params as { calendarUuid: string };
+    const { calendar_uuid: calendarUuid } = request.params as { calendar_uuid: string };
 
     return await this.calendarService.deleteCalendar(calendarUuid, reply);
   }

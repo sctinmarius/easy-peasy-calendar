@@ -7,10 +7,6 @@ const buildServer = async ({ port, logger }: { port: number; logger: boolean | o
 
   await registerPlugins(app);
 
-  app.get('/', async function handler(request: FastifyRequest, reply: FastifyReply) {
-    return { test: 'world' };
-  });
-
   app.setErrorHandler((error: FastifyError, request: FastifyRequest, reply: FastifyReply) => {
     request.log.info({ error });
     if (error.validation) {
@@ -21,8 +17,7 @@ const buildServer = async ({ port, logger }: { port: number; logger: boolean | o
 
   try {
     await prisma.$connect();
-    app.log.info('Database is ready to use');
-    app.log.info(`Environment: ${process.env.NODE_ENV}`);
+    app.log.info(`Database is ready to use on ${process.env.NODE_ENV} environment`);
 
     await app.listen({ port, host: '0.0.0.0' });
     app.log.info({

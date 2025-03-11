@@ -24,7 +24,6 @@ export default async function openapiGluePlugin(app: FastifyInstance) {
       getCalendarEntries: calendarEntryHttpTransport.getCalendarEntries.bind(calendarEntryHttpTransport),
       updateCalendarEntry: calendarEntryHttpTransport.updateCalendarEntry.bind(calendarEntryHttpTransport),
       deleteCalendarEntry: calendarEntryHttpTransport.deleteCalendarEntry.bind(calendarEntryHttpTransport),
-      getCalendarEntriesByCalendarUuid: calendarEntryHttpTransport.getCalendarEntriesByCalendarUuid.bind(calendarEntryHttpTransport),
     },
     prefix: 'v1',
   };

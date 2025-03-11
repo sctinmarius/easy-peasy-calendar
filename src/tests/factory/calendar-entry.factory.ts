@@ -4,6 +4,7 @@ export class CalendarEntryFactory {
   static generateOne(calendar: Calendar): CalendarEntry {
     return {
       uuid: faker.string.uuid(),
+      title: faker.lorem.word(),
       calendarUuid: calendar.uuid,
       startDate: faker.date.past(),
       endDate: faker.date.future(),
