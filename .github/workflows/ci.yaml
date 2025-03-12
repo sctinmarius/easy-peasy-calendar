@@ -1,0 +1,52 @@
+name: CI/CD Pipeline
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build_test_push:
+    runs-on: ubuntu-latest
+
+    services:
+      db:
+        image: postgres:latest
+        ports:
+          - 5432:5432
+        volumes:
+          - postgres_data:/var/lib/postgresql/data 
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+
+      - name: Build production Docker image
+        run: docker build --target production -t ghcr.io/${{ github.repository }}/calendar-api:latest .
+
+      - name: Run tests (production image)
+        run: |
+          docker-compose up --build --exit-code-from api_prod
+          docker exec api_prod yarn test:prod
+        env:
+          DATABASE_URL_TEST: ${{ secrets.DATABASE_URL_TEST }}
+
+      - name: Docker login to GHCR
+        if: success()
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.CR_PAT }}
+
+      - name: Push Docker image to GHCR
+        if: success()
+        run: docker push ghcr.io/${{ github.repository }}/calendar-api:latest
+
+    volumes:
+      postgres_data:
