@@ -34,7 +34,7 @@ jobs:
 
       - name: Run tests (production image)
         run: |
-          docker compose up --build --exit-code-from api_prod
+          docker compose --profile prod up --build --exit-code-from api_prod
           docker exec api_prod yarn test:prod
         env:
           DATABASE_URL_TEST: ${{ secrets.DATABASE_URL_TEST }}
