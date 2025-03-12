@@ -30,10 +30,13 @@ jobs:
         run: docker build --target production -t ghcr.io/${{ github.repository }}/calendar-api:latest .
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          API_PORT: ${{ secrets.API_PORT }}
 
       - name: Run tests (production image)
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          API_PORT: ${{ secrets.API_PORT }}
+
         run: |
           docker compose --profile prod up --build --exit-code-from api_prod
           docker exec api_prod yarn test:prod
