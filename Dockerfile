@@ -25,6 +25,4 @@ EXPOSE 3037
 
 ENV NODE_ENV=production
 
-RUN npx prisma migrate deploy
-
 CMD ["yarn", "start:prod"]
