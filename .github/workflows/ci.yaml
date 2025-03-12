@@ -33,13 +33,15 @@ jobs:
           API_PORT: ${{ secrets.API_PORT }}
 
       - name: Run tests (production image)
-        env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          API_PORT: ${{ secrets.API_PORT }}
-
         run: |
-          docker compose --profile prod up --build --exit-code-from api_prod
-          docker exec api_prod yarn test:prod
+          docker network create test-network
+          docker run --rm \
+            --network test-network \
+            -e DATABASE_URL=${{ secrets.DATABASE_URL }} \
+            -e API_PORT=${{ secrets.API_PORT }} \
+            ghcr.io/${{ github.repository }}/calendar-api:latest \
+            yarn test:prod
+          docker network rm test-network
 
       - name: Docker login to GHCR
         if: success()
