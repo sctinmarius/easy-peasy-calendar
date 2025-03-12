@@ -41,6 +41,8 @@ services:
       - 127.0.0.1:3037:3037
     profiles:
       - prod
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
     depends_on:
       db:
         condition: service_started
