@@ -26,9 +26,6 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Check docker compose version
-        run: docker compose version
-
       - name: Build production Docker image
         run: docker build --target production -t ghcr.io/${{ github.repository }}/calendar-api:latest .
         env:
