@@ -37,7 +37,7 @@ jobs:
           docker compose --profile prod up --build --exit-code-from api_prod
           docker exec api_prod yarn test:prod
         env:
-          DATABASE_URL_TEST: ${{ secrets.DATABASE_URL_TEST }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
       - name: Docker login to GHCR
         if: success()
