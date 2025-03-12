@@ -14,8 +14,6 @@ jobs:
         image: postgres:latest
         ports:
           - 5432:5432
-        volumes:
-          - postgres_data:/var/lib/postgresql/data 
 
     steps:
       - name: Checkout code
@@ -48,5 +46,5 @@ jobs:
         if: success()
         run: docker push ghcr.io/${{ github.repository }}/calendar-api:latest
 
-    volumes:
-      postgres_data:
+volumes:
+  postgres_data:
