@@ -34,14 +34,11 @@ jobs:
 
       - name: Run tests (production image)
         run: |
-          docker network create test-network
           docker run --rm \
-            --network test-network \
             -e DATABASE_URL=${{ secrets.DATABASE_URL }} \
             -e API_PORT=${{ secrets.API_PORT }} \
             ghcr.io/${{ github.repository }}/calendar-api:latest \
             yarn test:prod
-          docker network rm test-network
 
       - name: Docker login to GHCR
         if: success()
