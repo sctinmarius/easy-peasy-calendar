@@ -16,6 +16,14 @@ jobs:
           - 5432:5432
         volumes:
           - postgres_data:/var/lib/postgresql/data
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
 
     steps:
       - name: Checkout code
@@ -32,15 +40,12 @@ jobs:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           API_PORT: ${{ secrets.API_PORT }}
 
-      - name: Start database service
-        run: docker compose -f docker-compose.yaml up -d db
-
-      - name: Wait for database to be ready
-        run: |
-          until docker exec db psql "${{ secrets.DATABASE_URL }}" -c 'SELECT 1;' > /dev/null 2>&1; do
-            echo "Waiting for database to be ready..."
-            sleep 1
-          done
+      # - name: Wait for database to be ready
+      #   run: |
+      #     until docker exec db psql "${{ secrets.DATABASE_URL }}" -c 'SELECT 1;' > /dev/null 2>&1; do
+      #       echo "Waiting for database to be ready..."
+      #       sleep 1
+      #     done
 
       - name: Run tests (production image)
         run: |
@@ -49,9 +54,6 @@ jobs:
             -e API_PORT=${{ secrets.API_PORT }} \
             ghcr.io/${{ github.repository }}/calendar-api:latest \
             yarn test:prod
-
-      - name: Stop and remove database service
-        run: docker compose -f docker-compose.yaml down
 
       - name: Docker login to GHCR
         if: success()
