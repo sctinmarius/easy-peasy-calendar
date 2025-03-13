@@ -43,10 +43,8 @@ jobs:
           docker build \
             --target base \
             -t base/calendar-api:latest \
-            --build-arg DATABASE_URL=${{ secrets.DATABASE_URL }} .
-        env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          API_PORT: ${{ vars.API_PORT }}
+            --build-arg DATABASE_URL=${{ secrets.DATABASE_URL }} \
+            --build-arg API_PORT=${{ vars.API_PORT }} .
 
       - name: Run Prisma migrations
         run: |
@@ -61,10 +59,8 @@ jobs:
           docker build \
             --target production \
             -t ghcr.io/${{ github.repository }}/calendar-api:latest \
-            --build-arg DATABASE_URL=${{ secrets.DATABASE_URL }} .
-        env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          API_PORT: ${{ vars.API_PORT }}
+            --build-arg DATABASE_URL=${{ secrets.DATABASE_URL }} \
+            --build-arg API_PORT=${{ vars.API_PORT }} .
 
       - name: Run tests (production image)
         run: |
