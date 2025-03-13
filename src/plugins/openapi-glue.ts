@@ -2,8 +2,10 @@ import { FastifyInstance } from 'fastify';
 import fastifyOpenapiGlue, { FastifyOpenapiGlueOptions } from 'fastify-openapi-glue';
 import path from 'path';
 import { fileURLToPath } from 'url';
+
 import { CalendarEntryHttpTransport, CalendarHttpTransport } from '../transport';
 import { calendarEntryService, calendarService } from '../services';
+import { Security } from '../security';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -26,6 +28,7 @@ export default async function openapiGluePlugin(app: FastifyInstance) {
       deleteCalendarEntry: calendarEntryHttpTransport.deleteCalendarEntry.bind(calendarEntryHttpTransport),
     },
     prefix: 'v1',
+    securityHandlers: new Security(),
   };
 
   app.register(fastifyOpenapiGlue, fastifyOpenapiGlueOptions);

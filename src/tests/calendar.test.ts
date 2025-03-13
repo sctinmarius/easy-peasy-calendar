@@ -31,6 +31,9 @@ describe('[calendar]', async () => {
       const response = await server.inject({
         method: 'GET',
         url: '/v1/calendars',
+        headers: {
+          authorization: TestUtil.getBasicAuthHeader(),
+        },
       });
 
       assert.strictEqual(response.statusCode, 200);
@@ -43,10 +46,34 @@ describe('[calendar]', async () => {
       const response = await server.inject({
         method: 'GET',
         url: '/v1/calendars',
+        headers: {
+          authorization: TestUtil.getBasicAuthHeader(),
+        },
       });
 
       assert.strictEqual(response.statusCode, 200);
       assert.strictEqual(response.json().calendars.length, 0);
+    });
+
+    await t.test('Should return 401 if not authenticated', async () => {
+      const response = await server.inject({
+        method: 'GET',
+        url: '/v1/calendars',
+      });
+
+      assert.strictEqual(response.statusCode, 401);
+    });
+
+    await t.test('Should return 401 if the username and pass are wrong', async () => {
+      const response = await server.inject({
+        method: 'GET',
+        url: '/v1/calendars',
+        headers: {
+          authorization: TestUtil.getBasicAuthHeader('wrong-username', 'wrong-password'),
+        },
+      });
+
+      assert.strictEqual(response.statusCode, 401);
     });
   });
 
@@ -59,6 +86,9 @@ describe('[calendar]', async () => {
         url: '/v1/calendars',
         payload: {
           name: calendar.name,
+        },
+        headers: {
+          authorization: TestUtil.getBasicAuthHeader(),
         },
       });
 
@@ -92,6 +122,33 @@ describe('[calendar]', async () => {
       assert.strictEqual(response.statusCode, 400);
       assert.strictEqual(response.json().message, 'Validation error');
     });
+
+    await t.test('Should return 401 if not authenticated', async () => {
+      const response = await server.inject({
+        method: 'POST',
+        url: '/v1/calendars',
+        payload: {
+          name: 'Test Calendar',
+        },
+      });
+
+      assert.strictEqual(response.statusCode, 401);
+    });
+
+    await t.test('Should return 401 if the username and pass are wrong', async () => {
+      const response = await server.inject({
+        method: 'POST',
+        url: '/v1/calendars',
+        headers: {
+          authorization: TestUtil.getBasicAuthHeader('wrong-username', 'wrong-password'),
+        },
+        payload: {
+          name: 'Test Calendar',
+        },
+      });
+
+      assert.strictEqual(response.statusCode, 401);
+    });
   });
 
   it('GET /v1/calendars/:uuid', async (t) => {
@@ -103,6 +160,9 @@ describe('[calendar]', async () => {
       const response = await server.inject({
         method: 'GET',
         url: `/v1/calendars/${calendar.uuid}`,
+        headers: {
+          authorization: TestUtil.getBasicAuthHeader(),
+        },
       });
 
       assert.strictEqual(response.statusCode, 200);
@@ -117,6 +177,9 @@ describe('[calendar]', async () => {
       const response = await server.inject({
         method: 'GET',
         url: `/v1/calendars/${notFoundUuid}`,
+        headers: {
+          authorization: TestUtil.getBasicAuthHeader(),
+        },
       });
 
       assert.strictEqual(response.statusCode, 404);
@@ -131,6 +194,35 @@ describe('[calendar]', async () => {
 
       assert.strictEqual(response.statusCode, 400);
       assert.strictEqual(response.json().message, 'Validation error');
+    });
+
+    await t.test('Should return 401 if not authenticated', async () => {
+      const calendar = await prisma.calendar.create({
+        data: CalendarFactory.generateOne(),
+      });
+
+      const response = await server.inject({
+        method: 'GET',
+        url: `/v1/calendars/${calendar.uuid}`,
+      });
+
+      assert.strictEqual(response.statusCode, 401);
+    });
+
+    await t.test('Should return 401 if the username and pass are wrong', async () => {
+      const calendar = await prisma.calendar.create({
+        data: CalendarFactory.generateOne(),
+      });
+
+      const response = await server.inject({
+        method: 'GET',
+        url: `/v1/calendars/${calendar.uuid}`,
+        headers: {
+          authorization: TestUtil.getBasicAuthHeader('wrong-username', 'wrong-password'),
+        },
+      });
+
+      assert.strictEqual(response.statusCode, 401);
     });
   });
 
@@ -148,6 +240,9 @@ describe('[calendar]', async () => {
         method: 'PUT',
         url: `/v1/calendars/${calendar.uuid}`,
         payload: updatedCalendar,
+        headers: {
+          authorization: TestUtil.getBasicAuthHeader(),
+        },
       });
 
       assert.strictEqual(response.statusCode, 200);
@@ -164,6 +259,9 @@ describe('[calendar]', async () => {
         url: `/v1/calendars/${notFoundUuid}`,
         payload: {
           name: faker.lorem.word(),
+        },
+        headers: {
+          authorization: TestUtil.getBasicAuthHeader(),
         },
       });
 
@@ -183,6 +281,41 @@ describe('[calendar]', async () => {
       assert.strictEqual(response.statusCode, 400);
       assert.strictEqual(response.json().message, 'Validation error');
     });
+
+    await t.test('Should return 401 if not authenticated', async () => {
+      const calendar = await prisma.calendar.create({
+        data: CalendarFactory.generateOne(),
+      });
+
+      const response = await server.inject({
+        method: 'PUT',
+        url: `/v1/calendars/${calendar.uuid}`,
+        payload: {
+          name: 'Updated Calendar',
+        },
+      });
+
+      assert.strictEqual(response.statusCode, 401);
+    });
+
+    await t.test('Should return 401 if the username and pass are wrong', async () => {
+      const calendar = await prisma.calendar.create({
+        data: CalendarFactory.generateOne(),
+      });
+
+      const response = await server.inject({
+        method: 'PUT',
+        url: `/v1/calendars/${calendar.uuid}`,
+        headers: {
+          authorization: TestUtil.getBasicAuthHeader('wrong-username', 'wrong-password'),
+        },
+        payload: {
+          name: 'Updated Calendar',
+        },
+      });
+
+      assert.strictEqual(response.statusCode, 401);
+    });
   });
 
   it('DELETE /v1/calendars/:uuid', async (t) => {
@@ -194,6 +327,9 @@ describe('[calendar]', async () => {
       const response = await server.inject({
         method: 'DELETE',
         url: `/v1/calendars/${calendar.uuid}`,
+        headers: {
+          authorization: TestUtil.getBasicAuthHeader(),
+        },
       });
 
       assert.strictEqual(response.statusCode, 200);
@@ -226,6 +362,9 @@ describe('[calendar]', async () => {
       const response = await server.inject({
         method: 'DELETE',
         url: `/v1/calendars/${calendar.uuid}`,
+        headers: {
+          authorization: TestUtil.getBasicAuthHeader(),
+        },
       });
 
       assert.deepStrictEqual(response.statusCode, 200);
@@ -250,6 +389,9 @@ describe('[calendar]', async () => {
       const response = await server.inject({
         method: 'DELETE',
         url: `/v1/calendars/${notFoundUuid}`,
+        headers: {
+          authorization: TestUtil.getBasicAuthHeader(),
+        },
       });
 
       assert.strictEqual(response.statusCode, 404);
@@ -264,6 +406,35 @@ describe('[calendar]', async () => {
 
       assert.strictEqual(response.statusCode, 400);
       assert.strictEqual(response.json().message, 'Validation error');
+    });
+
+    await t.test('Should return 401 if not authenticated', async () => {
+      const calendar = await prisma.calendar.create({
+        data: CalendarFactory.generateOne(),
+      });
+
+      const response = await server.inject({
+        method: 'DELETE',
+        url: `/v1/calendars/${calendar.uuid}`,
+      });
+
+      assert.strictEqual(response.statusCode, 401);
+    });
+
+    await t.test('Should return 401 if the username and pass are wrong', async () => {
+      const calendar = await prisma.calendar.create({
+        data: CalendarFactory.generateOne(),
+      });
+
+      const response = await server.inject({
+        method: 'DELETE',
+        url: `/v1/calendars/${calendar.uuid}`,
+        headers: {
+          authorization: TestUtil.getBasicAuthHeader('wrong-username', 'wrong-password'),
+        },
+      });
+
+      assert.strictEqual(response.statusCode, 401);
     });
   });
 });

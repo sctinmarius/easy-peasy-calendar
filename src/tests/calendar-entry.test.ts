@@ -5,7 +5,7 @@ import { TestUtil } from './util/test.util';
 import { prisma } from '../client';
 import { CalendarEntryFactory, CalendarFactory } from './factory';
 import { faker } from '@faker-js/faker';
-
+// todo add 401 tests
 describe('[Calendar Entry]', async () => {
   let server: FastifyInstance;
 

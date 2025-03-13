@@ -1,8 +1,12 @@
-openapi: 3.0.0
+openapi: 3.0.4
+
+security:
+  - basicAuth: [] 
 info:
   title: Easy Peasy Calendar API
   version: "1.0.0"
   description: API for managing calendars and calendar entries.
+
 paths:
   /calendars:
     get:
@@ -24,7 +28,7 @@ paths:
                     type: integer
                   total:
                     type: integer
-                  totalPages:
+                  total_pages:
                     type: integer
                   calendars:
                     type: array
@@ -33,8 +37,12 @@ paths:
                       properties:
                         uuid:
                           type: string
+                          example: "123e4567-e89b-12d3-a456-426614174000"
                         name:
                           type: string
+                          example: "My Calendar"
+        '401':
+          $ref: '#/components/responses/Unauthorized'
     post:
       tags:
         - Calendars
@@ -63,8 +71,15 @@ paths:
                 properties:
                   uuid:
                     type: string
+                    example: "123e4567-e89b-12d3-a456-426614174000"
                   name:
                     type: string
+                    example: "My Calendar"
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
   /calendars/{calendar_uuid}:
     get:
       tags:
@@ -88,26 +103,16 @@ paths:
                 properties:
                   uuid:
                     type: string
+                    example: "123e4567-e89b-12d3-a456-426614174000"
                   name:
                     type: string
+                    example: "My Calendar"
         '400':
-          description: Bad request
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
         '404':
-          description: Calendar not found
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
+          $ref: '#/components/responses/NotFound'
     put:
       tags:
         - Calendars
@@ -141,26 +146,16 @@ paths:
                 properties:
                   uuid:
                     type: string
+                    example: "123e4567-e89b-12d3-a456-426614174000"
                   name:
                     type: string
+                    example: "Updated Calendar Name"
         '400':
-          description: Bad request
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
         '404':
-          description: Calendar not found
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
+          $ref: '#/components/responses/NotFound'
     delete:
       tags:
         - Calendars
@@ -184,23 +179,12 @@ paths:
                   message:
                     type: string
         '400':
-          description: Bad request
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
         '404':
-          description: Calendar not found
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
+          $ref: '#/components/responses/NotFound'
+
   /calendars/{calendar_uuid}/entries:
     post:
       tags:
@@ -256,6 +240,10 @@ paths:
                     format: date-time
                   recurrence_rule:
                     type: string
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
     get:
       tags:
         - Calendar Entries
@@ -307,6 +295,7 @@ paths:
                           format: date-time
                         recurrence_rule:
                           type: string
+
   /calendars/{calendar_uuid}/entries/{entry_uuid}:
     put:
       tags:
@@ -359,23 +348,11 @@ paths:
         '204':
           description: Calendar entry updated
         '400':
-          description: Bad request
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
         '404':
-          description: Calendar entry not found
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
+          $ref: '#/components/responses/NotFound'
     delete:
       tags:
         - Calendar Entries
@@ -405,20 +382,44 @@ paths:
                   message:
                     type: string
         '400':
-          description: Bad request
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
         '404':
-          description: Calendar entry not found
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
+          $ref: '#/components/responses/NotFound'
+
+components:
+  responses:
+    BadRequest:
+        description: Bad request
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+                  example: "Validation error"
+
+    Unauthorized:
+        description: Unauthorized
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+                  example: "Unauthorized"
+
+    NotFound:
+        description: Not found
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+                  example: "Resource not found"
+  

@@ -1,12 +1,13 @@
-import { FastifyReply, FastifyRequest } from 'fastify';
+import { FastifyReply } from 'fastify';
 import { constants as HttpStatusCodes } from 'http2';
+
 import { prisma } from '../client';
 
 export type CalendarResponse = {
   offset: number;
   limit: number;
   total: number;
-  totalPages: number;
+  total_pages: number;
   calendars: CalendarItemResponse[];
 };
 
@@ -16,7 +17,7 @@ type CalendarItemResponse = {
 };
 
 export class CalendarService {
-  async getCalendars(request: FastifyRequest, reply: FastifyReply): Promise<CalendarResponse> {
+  async getCalendars(): Promise<CalendarResponse> {
     const calendars = await prisma.calendar.findMany();
 
     // todo implement pagination
@@ -24,7 +25,7 @@ export class CalendarService {
       offset: 0,
       limit: 10,
       total: 0,
-      totalPages: 0,
+      total_pages: 0,
       calendars: calendars,
     };
   }
