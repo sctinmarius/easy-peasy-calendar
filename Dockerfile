@@ -10,6 +10,7 @@ COPY openapi openapi
 COPY prisma ./prisma
 
 RUN yarn prisma:generate
+RUN npx prisma migrate deploy
 RUN yarn build
 
 FROM node:20-alpine AS production
