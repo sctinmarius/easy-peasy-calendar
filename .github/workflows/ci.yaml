@@ -48,6 +48,14 @@ jobs:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           API_PORT: ${{ vars.API_PORT }}
 
+      - name: Run Prisma migrations
+        run: |
+          docker run --rm \
+            --network "calendar_project_default" \
+            -e DATABASE_URL=${{ secrets.DATABASE_URL }} \
+            base/calendar-api:latest \
+            npx prisma migrate deploy
+
       - name: Build production Docker image
         run: |
           docker build \
@@ -82,5 +90,5 @@ jobs:
 
       - name: Clean up
         run: |
-          docker-compose down --volumes
+          docker compose down --volumes
           sudo rm -rf ./.docker/
