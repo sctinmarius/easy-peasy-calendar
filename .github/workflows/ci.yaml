@@ -19,13 +19,21 @@ jobs:
           node-version: '20'
 
       - name: Build base Docker image
-        run: docker build --target base -t base/calendar-api:latest .
+        run: |
+          docker build \
+            --target base \
+            -t base/calendar-api:latest \
+            --build-arg DATABASE_URL=${{ secrets.DATABASE_URL }} .
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           API_PORT: ${{ secrets.API_PORT }}
 
       - name: Build production Docker image
-        run: docker build --target production -t ghcr.io/${{ github.repository }}/calendar-api:latest .
+        run: |
+          docker build \
+            --target production \
+            -t ghcr.io/${{ github.repository }}/calendar-api:latest \
+            --build-arg DATABASE_URL=${{ secrets.DATABASE_URL }} .
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           API_PORT: ${{ secrets.API_PORT }}
