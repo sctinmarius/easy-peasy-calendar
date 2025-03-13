@@ -12,7 +12,7 @@
   ],
   "scripts": {
     "start:dev": "cross-env NODE_ENV=dev nodemon --watch './**/*.{ts}' --exec 'node --no-warnings --experimental-specifier-resolution=node --loader ts-node/esm' src/index.ts",
-    "start:prod": "node --no-warnings --experimental-specifier-resolution=node --loader ts-node/esm ./build/index.js",
+    "start:prod": "npx prisma migrate deploy && node --no-warnings --experimental-specifier-resolution=node --loader ts-node/esm ./build/index.js",
     "test:dev": "cross-env NODE_ENV=test node --experimental-specifier-resolution=node --loader ts-node/esm --no-warnings --test --test-concurrency=1 src/tests/*.test.ts",
     "test:prod": "cross-env NODE_ENV=test node --experimental-specifier-resolution=node --loader ts-node/esm --no-warnings --test --test-concurrency=1 build/tests/*.test.js",
     "build": "yarn clean && tsc",

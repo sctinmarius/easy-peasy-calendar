@@ -26,4 +26,4 @@ EXPOSE 3037
 
 ENV NODE_ENV=production
 
-CMD ["sh", "-c", "npx prisma migrate deploy && yarn start:prod"]
+CMD ["yarn", "start:prod"]
