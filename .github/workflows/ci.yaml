@@ -21,6 +21,9 @@ jobs:
         with:
           node-version: '20'
 
+      - name: Define Docker Tag
+        run: echo "TAG=${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && 'latest' || 'test' }}" >> $GITHUB_ENV
+
       - name: Start Database with Docker Compose
         run: docker compose up db -d
         env:
@@ -61,7 +64,7 @@ jobs:
         run: |
           docker build \
             --target production \
-            -t ghcr.io/${{ github.repository }}/calendar-api:${{ github.event_name == 'push' && github.ref == 'refs/heads/main' ? 'latest' : 'test' }} \
+            -t ghcr.io/${{ github.repository }}/calendar-api:${{ env.TAG }} \
             --build-arg DATABASE_URL=${{ secrets.DATABASE_URL }} \
             --build-arg API_PORT=${{ vars.API_PORT }} .
 
@@ -72,7 +75,7 @@ jobs:
             --network "calendar_project_default" \
             -e DATABASE_URL=${{ secrets.DATABASE_URL }} \
             -e API_PORT=${{ vars.API_PORT }} \
-            ghcr.io/${{ github.repository }}/calendar-api:${{ github.event_name == 'push' && github.ref == 'refs/heads/main' ? 'latest' : 'test' }} \
+            ghcr.io/${{ github.repository }}/calendar-api:${{ env.TAG }} \
             yarn test:prod
 
       - name: Docker login to GHCR
@@ -85,7 +88,7 @@ jobs:
 
       - name: Push Docker image to GHCR
         if: success()
-        run: docker push ghcr.io/${{ github.repository }}/calendar-api:${{ github.event_name == 'push' && github.ref == 'refs/heads/main' ? 'latest' : 'test' }}
+        run: docker push ghcr.io/${{ github.repository }}/calendar-api:${{ env.TAG }}
 
       - name: Clean up
         run: |
