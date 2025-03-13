@@ -4,6 +4,9 @@ on:
   pull_request:
     branches:
       - main
+  push:
+    branches:
+      - main
 
 jobs:
   build_test_push:
@@ -58,7 +61,7 @@ jobs:
         run: |
           docker build \
             --target production \
-            -t ghcr.io/${{ github.repository }}/calendar-api:latest \
+            -t ghcr.io/${{ github.repository }}/calendar-api:${{ github.event_name == 'push' && github.ref == 'refs/heads/main' ? 'latest' : 'test' }} \
             --build-arg DATABASE_URL=${{ secrets.DATABASE_URL }} \
             --build-arg API_PORT=${{ vars.API_PORT }} .
 
@@ -69,7 +72,7 @@ jobs:
             --network "calendar_project_default" \
             -e DATABASE_URL=${{ secrets.DATABASE_URL }} \
             -e API_PORT=${{ vars.API_PORT }} \
-            ghcr.io/${{ github.repository }}/calendar-api:latest \
+            ghcr.io/${{ github.repository }}/calendar-api:${{ github.event_name == 'push' && github.ref == 'refs/heads/main' ? 'latest' : 'test' }} \
             yarn test:prod
 
       - name: Docker login to GHCR
@@ -82,7 +85,7 @@ jobs:
 
       - name: Push Docker image to GHCR
         if: success()
-        run: docker push ghcr.io/${{ github.repository }}/calendar-api:latest
+        run: docker push ghcr.io/${{ github.repository }}/calendar-api:${{ github.event_name == 'push' && github.ref == 'refs/heads/main' ? 'latest' : 'test' }}
 
       - name: Clean up
         run: |
