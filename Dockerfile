@@ -10,6 +10,7 @@ COPY openapi openapi
 COPY prisma ./prisma
 
 RUN yarn prisma:generate
+
 RUN yarn build
 
 FROM node:20-alpine AS production
@@ -24,7 +25,5 @@ COPY --from=base /app/prisma ./prisma
 EXPOSE 3037
 
 ENV NODE_ENV=production
-
-RUN npx prisma migrate deploy
 
 CMD ["yarn", "start:prod"]

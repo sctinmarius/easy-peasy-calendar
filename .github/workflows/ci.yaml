@@ -1,0 +1,96 @@
+name: CI/CD Pipeline
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+
+jobs:
+  build_test_push:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Define Docker Tag
+        run: echo "TAG=${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && 'latest' || 'test' }}" >> $GITHUB_ENV
+
+      - name: Start Database with Docker Compose
+        run: docker compose up db -d
+        env:
+          COMPOSE_PROJECT_NAME: calendar_project
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          API_PORT: ${{ vars.API_PORT }}
+
+      - name: Wait for database to be ready
+        run: |
+          timeout=100
+          while ! docker exec database pg_isready -U user -d calendar_db && [ $timeout -gt 0 ]; do
+            echo "Waiting for database to be ready..."
+            sleep 1
+            timeout=$((timeout-1))
+          done
+          if [ $timeout -eq 0 ]; then
+            echo "Database not ready in time"
+            exit 1
+          fi
+
+      - name: Build base Docker image
+        run: |
+          docker build \
+            --target base \
+            -t base/calendar-api:latest \
+            --build-arg DATABASE_URL=${{ secrets.DATABASE_URL }} \
+            --build-arg API_PORT=${{ vars.API_PORT }} .
+
+      - name: Run Prisma migrations
+        run: |
+          docker run --rm \
+            --network "calendar_project_default" \
+            -e DATABASE_URL=${{ secrets.DATABASE_URL }} \
+            base/calendar-api:latest \
+            npx prisma migrate deploy
+
+      - name: Build production Docker image
+        run: |
+          docker build \
+            --target production \
+            -t ghcr.io/${{ github.repository }}/calendar-api:${{ env.TAG }} \
+            --build-arg DATABASE_URL=${{ secrets.DATABASE_URL }} \
+            --build-arg API_PORT=${{ vars.API_PORT }} .
+
+      - name: Run tests (production image)
+        run: |
+          docker run --rm \
+            --user 0:0 \
+            --network "calendar_project_default" \
+            -e DATABASE_URL=${{ secrets.DATABASE_URL }} \
+            -e API_PORT=${{ vars.API_PORT }} \
+            ghcr.io/${{ github.repository }}/calendar-api:${{ env.TAG }} \
+            yarn test:prod
+
+      - name: Docker login to GHCR
+        if: success()
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.CR_PAT }}
+
+      - name: Push Docker image to GHCR
+        if: success()
+        run: docker push ghcr.io/${{ github.repository }}/calendar-api:${{ env.TAG }}
+
+      - name: Clean up
+        run: |
+          docker compose down --volumes
+          sudo rm -rf ./.docker/
