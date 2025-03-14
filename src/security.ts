@@ -8,14 +8,14 @@ export class Security {
     const authorization = request.headers['authorization'];
 
     if (!authorization) {
-      reply.code(HttpStatusCodes.HTTP_STATUS_UNAUTHORIZED).send({ error: 'Unauthorized' });
+      reply.code(HttpStatusCodes.HTTP_STATUS_UNAUTHORIZED).send({ message: 'Unauthorized' });
       return;
     }
 
     const [scheme, encoded] = authorization.split(' ');
 
     if (scheme !== 'Basic' || !encoded) {
-      reply.code(HttpStatusCodes.HTTP_STATUS_UNAUTHORIZED).send({ error: 'Unauthorized' });
+      reply.code(HttpStatusCodes.HTTP_STATUS_UNAUTHORIZED).send({ message: 'Unauthorized' });
       return;
     }
 
@@ -25,7 +25,7 @@ export class Security {
     if (user === this.USERNAME && pass === this.PASSWORD) {
       return;
     } else {
-      reply.code(HttpStatusCodes.HTTP_STATUS_UNAUTHORIZED).send({ error: 'Unauthorized' });
+      reply.code(HttpStatusCodes.HTTP_STATUS_UNAUTHORIZED).send({ message: 'Unauthorized' });
     }
   }
 }

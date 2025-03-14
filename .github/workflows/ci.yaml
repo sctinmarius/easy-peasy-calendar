@@ -30,6 +30,8 @@ jobs:
           COMPOSE_PROJECT_NAME: calendar_project
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           API_PORT: ${{ vars.API_PORT }}
+          BASIC_AUTH_USERNAME: ${{ secrets.BASIC_AUTH_USERNAME }}
+          BASIC_AUTH_PASSWORD: ${{ secrets.BASIC_AUTH_PASSWORD }}
 
       - name: Wait for database to be ready
         run: |
@@ -50,7 +52,9 @@ jobs:
             --target base \
             -t base/calendar-api:latest \
             --build-arg DATABASE_URL=${{ secrets.DATABASE_URL }} \
-            --build-arg API_PORT=${{ vars.API_PORT }} .
+            --build-arg API_PORT=${{ vars.API_PORT }} \
+            --build-arg BASIC_AUTH_USERNAME=${{ secrets.BASIC_AUTH_USERNAME }} \
+            --build-arg BASIC_AUTH_PASSWORD=${{ secrets.BASIC_AUTH_PASSWORD }} .
 
       - name: Run Prisma migrations
         run: |
@@ -66,7 +70,9 @@ jobs:
             --target production \
             -t ghcr.io/${{ github.repository }}/calendar-api:${{ env.TAG }} \
             --build-arg DATABASE_URL=${{ secrets.DATABASE_URL }} \
-            --build-arg API_PORT=${{ vars.API_PORT }} .
+            --build-arg API_PORT=${{ vars.API_PORT }} \
+            --build-arg BASIC_AUTH_USERNAME=${{ secrets.BASIC_AUTH_USERNAME }} \
+            --build-arg BASIC_AUTH_PASSWORD=${{ secrets.BASIC_AUTH_PASSWORD }} .
 
       - name: Run tests (production image)
         run: |
@@ -75,6 +81,8 @@ jobs:
             --network "calendar_project_default" \
             -e DATABASE_URL=${{ secrets.DATABASE_URL }} \
             -e API_PORT=${{ vars.API_PORT }} \
+            -e BASIC_AUTH_USERNAME=${{ secrets.BASIC_AUTH_USERNAME }} \
+            -e BASIC_AUTH_PASSWORD=${{ secrets.BASIC_AUTH_PASSWORD }} \
             ghcr.io/${{ github.repository }}/calendar-api:${{ env.TAG }} \
             yarn test:prod
 
