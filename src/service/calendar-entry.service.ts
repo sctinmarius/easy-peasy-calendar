@@ -1,7 +1,8 @@
-import { FastifyReply, FastifyRequest } from 'fastify';
+import { FastifyReply } from 'fastify';
 import { constants as HttpStatusCodes } from 'http2';
-import { prisma } from '../client';
 import { CalendarEntry } from '@prisma/client';
+
+import { prisma } from '../client';
 
 type CalendarEntryPayload = {
   title: string;

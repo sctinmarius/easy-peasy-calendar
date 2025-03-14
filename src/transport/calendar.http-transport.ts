@@ -7,7 +7,7 @@ export class CalendarHttpTransport {
   constructor(private calendarService: CalendarService) {}
 
   async getCalendars(request: FastifyRequest, reply: FastifyReply) {
-    return await this.calendarService.getCalendars(request, reply);
+    return await this.calendarService.getCalendars();
   }
 
   async createCalendar(request: FastifyRequest, reply: FastifyReply) {

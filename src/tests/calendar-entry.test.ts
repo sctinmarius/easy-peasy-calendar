@@ -1,10 +1,11 @@
 import { after, afterEach, before, describe, it } from 'node:test';
 import assert from 'node:assert';
 import { FastifyInstance } from 'fastify';
+import { faker } from '@faker-js/faker';
+
 import { TestUtil } from './util/test.util';
 import { prisma } from '../client';
 import { CalendarEntryFactory, CalendarFactory } from './factory';
-import { faker } from '@faker-js/faker';
 
 describe('[Calendar Entry]', async () => {
   let server: FastifyInstance;
@@ -39,6 +40,9 @@ describe('[Calendar Entry]', async () => {
         method: 'POST',
         url: `/v1/calendars/${calendar.uuid}/entries`,
         payload: calendarEntry,
+        headers: {
+          authorization: TestUtil.getBasicAuthHeader(),
+        },
       });
 
       assert.deepStrictEqual(response.statusCode, 201);
@@ -47,11 +51,31 @@ describe('[Calendar Entry]', async () => {
     });
 
     await t.test('Should return 404 if calendar does not exist', async () => {
-      const invalidCalendarUuid = faker.string.uuid();
+      const notFoundCalendarUuid = faker.string.uuid();
 
       const response = await server.inject({
         method: 'POST',
-        url: `/v1/calendars/${invalidCalendarUuid}/entries`,
+        url: `/v1/calendars/${notFoundCalendarUuid}/entries`,
+        payload: {
+          title: 'Test Entry',
+          start_date: new Date(),
+          end_date: faker.date.future(),
+          recurrence_rule: 'FREQ=DAILY;INTERVAL=3;COUNT=3',
+        },
+        headers: {
+          authorization: TestUtil.getBasicAuthHeader(),
+        },
+      });
+
+      assert.deepStrictEqual(response.statusCode, 404);
+      assert.deepStrictEqual(response.json().message, 'Calendar not found');
+    });
+
+    await t.test('Should return 401 if not authenticated', async () => {
+      const calendarUuid = faker.string.uuid();
+      const response = await server.inject({
+        method: 'POST',
+        url: `/v1/calendars/${calendarUuid}/entries`,
         payload: {
           title: 'Test Entry',
           start_date: new Date(),
@@ -60,8 +84,26 @@ describe('[Calendar Entry]', async () => {
         },
       });
 
-      assert.deepStrictEqual(response.statusCode, 404);
-      assert.deepStrictEqual(response.json().message, 'Calendar not found');
+      assert.strictEqual(response.statusCode, 401);
+    });
+
+    await t.test('Should return 401 if invalid credentials', async () => {
+      const calendarUuid = faker.string.uuid();
+      const response = await server.inject({
+        method: 'POST',
+        url: `/v1/calendars/${calendarUuid}/entries`,
+        payload: {
+          title: 'Test Entry',
+          start_date: new Date(),
+          end_date: faker.date.future(),
+          recurrence_rule: 'FREQ=DAILY;INTERVAL=3;COUNT=3',
+        },
+        headers: {
+          authorization: TestUtil.getBasicAuthHeader('invalid-username', 'invalid-password'),
+        },
+      });
+
+      assert.strictEqual(response.statusCode, 401);
     });
 
     await t.test('Should return 400 if payload is invalid', async () => {
@@ -120,6 +162,9 @@ describe('[Calendar Entry]', async () => {
           start_date: '2023-10-01',
           end_date: '2024-05-10',
         },
+        headers: {
+          authorization: TestUtil.getBasicAuthHeader(),
+        },
       });
 
       assert.deepStrictEqual(response.statusCode, 200);
@@ -158,6 +203,9 @@ describe('[Calendar Entry]', async () => {
           start_date: '2023-10-01',
           end_date: '2024-05-10',
         },
+        headers: {
+          authorization: TestUtil.getBasicAuthHeader(),
+        },
       });
 
       assert.deepStrictEqual(response.statusCode, 200);
@@ -173,6 +221,9 @@ describe('[Calendar Entry]', async () => {
         query: {
           start_date: '2023-10-01',
           end_date: '2024-05-10',
+        },
+        headers: {
+          authorization: TestUtil.getBasicAuthHeader(),
         },
       });
 
@@ -214,6 +265,37 @@ describe('[Calendar Entry]', async () => {
       assert.deepStrictEqual(response.statusCode, 400);
       assert.deepStrictEqual(response.json().message, 'Validation error');
     });
+
+    await t.test('Should return 401 if not authenticated', async () => {
+      const calendarUuid = faker.string.uuid();
+      const response = await server.inject({
+        method: 'GET',
+        url: `/v1/calendars/${calendarUuid}/entries`,
+        query: {
+          start_date: '2023-10-01',
+          end_date: '2024-05-10',
+        },
+      });
+
+      assert.strictEqual(response.statusCode, 401);
+    });
+
+    await t.test('Should return 401 if invalid credentials', async () => {
+      const calendarUuid = faker.string.uuid();
+      const response = await server.inject({
+        method: 'GET',
+        url: `/v1/calendars/${calendarUuid}/entries`,
+        query: {
+          start_date: '2023-10-01',
+          end_date: '2024-05-10',
+        },
+        headers: {
+          authorization: TestUtil.getBasicAuthHeader('invalid-username', 'invalid-password'),
+        },
+      });
+
+      assert.strictEqual(response.statusCode, 401);
+    });
   });
 
   it('PUT /v1/calendars/{calendarUuid}/entries/{entryUuid}', async (t) => {
@@ -239,6 +321,9 @@ describe('[Calendar Entry]', async () => {
         method: 'PUT',
         url: `/v1/calendars/${calendar.uuid}/entries/${createdEntry.uuid}`,
         payload: updatedEntry,
+        headers: {
+          authorization: TestUtil.getBasicAuthHeader(),
+        },
       });
 
       assert.strictEqual(response.statusCode, 204);
@@ -271,6 +356,9 @@ describe('[Calendar Entry]', async () => {
         method: 'PUT',
         url: `/v1/calendars/${calendar.uuid}/entries/${createdEntry2.uuid}`,
         payload: overlappingEntry,
+        headers: {
+          authorization: TestUtil.getBasicAuthHeader(),
+        },
       });
 
       assert.strictEqual(response.statusCode, 409);
@@ -304,6 +392,9 @@ describe('[Calendar Entry]', async () => {
         method: 'PUT',
         url: `/v1/calendars/${calendar.uuid}/entries/${createdEntry2.uuid}?force=true`,
         payload: overlappingEntry,
+        headers: {
+          authorization: TestUtil.getBasicAuthHeader(),
+        },
       });
 
       assert.strictEqual(response.statusCode, 204);
@@ -321,6 +412,9 @@ describe('[Calendar Entry]', async () => {
           start_date: new Date(),
           end_date: faker.date.future(),
           recurrence_rule: 'FREQ=DAILY;INTERVAL=3;COUNT=3',
+        },
+        headers: {
+          authorization: TestUtil.getBasicAuthHeader(),
         },
       });
 
@@ -345,10 +439,94 @@ describe('[Calendar Entry]', async () => {
           end_date: faker.date.future(),
           recurrence_rule: 'FREQ=DAILY;INTERVAL=3;COUNT=3',
         },
+        headers: {
+          authorization: TestUtil.getBasicAuthHeader(),
+        },
       });
 
       assert.deepStrictEqual(response.statusCode, 404);
       assert.deepStrictEqual(response.json().message, 'Calendar entry not found');
+    });
+
+    await t.test('Should return 400 if calendarUuid is invalid', async () => {
+      const invalidCalendarUuid = 'invalid-uuid';
+      const entryUuid = faker.string.uuid();
+
+      const response = await server.inject({
+        method: 'PUT',
+        url: `/v1/calendars/${invalidCalendarUuid}/entries/${entryUuid}`,
+        payload: {
+          title: 'Updated Entry',
+          start_date: new Date(),
+          end_date: faker.date.future(),
+          recurrence_rule: 'FREQ=DAILY;INTERVAL=3;COUNT=3',
+        },
+      });
+
+      assert.deepStrictEqual(response.statusCode, 400);
+      assert.deepStrictEqual(response.json().message, 'Validation error');
+    });
+
+    await t.test('Should return 400 if entryUuid is invalid', async () => {
+      const calendar = CalendarFactory.generateOne();
+      await prisma.calendar.create({
+        data: calendar,
+      });
+
+      const invalidEntryUuid = 'invalid-uuid';
+
+      const response = await server.inject({
+        method: 'PUT',
+        url: `/v1/calendars/${calendar.uuid}/entries/${invalidEntryUuid}`,
+        payload: {
+          title: 'Updated Entry',
+          start_date: new Date(),
+          end_date: faker.date.future(),
+          recurrence_rule: 'FREQ=DAILY;INTERVAL=3;COUNT=3',
+        },
+      });
+
+      assert.deepStrictEqual(response.statusCode, 400);
+      assert.deepStrictEqual(response.json().message, 'Validation error');
+    });
+
+    await t.test('Should return 401 if not authenticated', async () => {
+      const calendarUuid = faker.string.uuid();
+      const entryUuid = faker.string.uuid();
+
+      const response = await server.inject({
+        method: 'PUT',
+        url: `/v1/calendars/${calendarUuid}/entries/${entryUuid}`,
+        payload: {
+          title: 'Updated Entry',
+          start_date: new Date(),
+          end_date: faker.date.future(),
+          recurrence_rule: 'FREQ=DAILY;INTERVAL=3;COUNT=3',
+        },
+      });
+
+      assert.strictEqual(response.statusCode, 401);
+    });
+
+    await t.test('Should return 401 if invalid credentials', async () => {
+      const calendarUuid = faker.string.uuid();
+      const entryUuid = faker.string.uuid();
+
+      const response = await server.inject({
+        method: 'PUT',
+        url: `/v1/calendars/${calendarUuid}/entries/${entryUuid}`,
+        payload: {
+          title: 'Updated Entry',
+          start_date: new Date(),
+          end_date: faker.date.future(),
+          recurrence_rule: 'FREQ=DAILY;INTERVAL=3;COUNT=3',
+        },
+        headers: {
+          authorization: TestUtil.getBasicAuthHeader('invalid-username', 'invalid-password'),
+        },
+      });
+
+      assert.strictEqual(response.statusCode, 401);
     });
   });
 
@@ -372,6 +550,9 @@ describe('[Calendar Entry]', async () => {
       const response = await server.inject({
         method: 'DELETE',
         url: `/v1/calendars/${calendar.uuid}/entries/${calendarEntry.uuid}`,
+        headers: {
+          authorization: TestUtil.getBasicAuthHeader(),
+        },
       });
 
       assert.deepStrictEqual(response.statusCode, 204);
@@ -384,6 +565,9 @@ describe('[Calendar Entry]', async () => {
       const response = await server.inject({
         method: 'DELETE',
         url: `/v1/calendars/${calendarUuidNotFound}/entries/${entryUuid}`,
+        headers: {
+          authorization: TestUtil.getBasicAuthHeader(),
+        },
       });
 
       assert.deepStrictEqual(response.statusCode, 404);
@@ -401,6 +585,9 @@ describe('[Calendar Entry]', async () => {
       const response = await server.inject({
         method: 'DELETE',
         url: `/v1/calendars/${calendar.uuid}/entries/${entryUuid}`,
+        headers: {
+          authorization: TestUtil.getBasicAuthHeader(),
+        },
       });
 
       assert.deepStrictEqual(response.statusCode, 404);
@@ -435,6 +622,33 @@ describe('[Calendar Entry]', async () => {
 
       assert.deepStrictEqual(response.statusCode, 400);
       assert.deepStrictEqual(response.json().message, 'Validation error');
+    });
+
+    await t.test('Should return 401 if not authenticated', async () => {
+      const calendarUuid = faker.string.uuid();
+      const entryUuid = faker.string.uuid();
+
+      const response = await server.inject({
+        method: 'DELETE',
+        url: `/v1/calendars/${calendarUuid}/entries/${entryUuid}`,
+      });
+
+      assert.strictEqual(response.statusCode, 401);
+    });
+
+    await t.test('Should return 401 if invalid credentials', async () => {
+      const calendarUuid = faker.string.uuid();
+      const entryUuid = faker.string.uuid();
+
+      const response = await server.inject({
+        method: 'DELETE',
+        url: `/v1/calendars/${calendarUuid}/entries/${entryUuid}`,
+        headers: {
+          authorization: TestUtil.getBasicAuthHeader('invalid-username', 'invalid-password'),
+        },
+      });
+
+      assert.strictEqual(response.statusCode, 401);
     });
   });
 });

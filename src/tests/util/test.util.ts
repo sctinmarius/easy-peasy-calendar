@@ -11,4 +11,8 @@ export class TestUtil {
   static async teardown(server: FastifyInstance) {
     await server.close();
   }
+
+  static getBasicAuthHeader(username = process.env.BASIC_AUTH_USERNAME, password = process.env.BASIC_AUTH_PASSWORD): string {
+    return `Basic ${Buffer.from(`${username}:${password}`).toString('base64')}`;
+  }
 }
